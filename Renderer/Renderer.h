@@ -18,9 +18,9 @@ class Renderer
     ComPtr<IDXGISwapChain3> m_swapChain;
     
     unique_ptr<CbvSrvUavDescriptorHeap> cbvSrvUavHeap = make_unique<CbvSrvUavDescriptorHeap>();
+    unique_ptr<RtvDescriptorHeap> rtvHeap = make_unique<RtvDescriptorHeap>();
     unique_ptr<Sampler> sampler = make_unique<Sampler>();
-    ComPtr<ID3D12DescriptorHeap> dsvHeap;
-    ComPtr<ID3D12DescriptorHeap> rtvHeap;
+    unique_ptr<DsvDescriptorHeap> dsvHeap = make_unique<DsvDescriptorHeap>();
 
 
     HANDLE m_fenceEvent = nullptr;
@@ -28,7 +28,7 @@ class Renderer
     UINT64 m_fenceValue = 0;
 
     FrameResource* frameResources[FrameCount] = {};
-
+    
     void WaitForGpu();
     void Render();
     void Present();
@@ -50,15 +50,16 @@ public:
     void LoadCommonAssets();
     void LoadAssets();
     void Update();
+    void LightPass();
 
-    [[nodiscard]] ID3D12DescriptorHeap* GetRtvHeap() const
+    [[nodiscard]] RtvDescriptorHeap* GetRtvHeap() const
     {
-        return rtvHeap.Get();
+        return rtvHeap.get();
     }
     
-    [[nodiscard]] ID3D12DescriptorHeap* GetDsvHeap() const
+    [[nodiscard]] DsvDescriptorHeap* GetDsvHeap() const
     {
-        return dsvHeap.Get();
+        return dsvHeap.get();
     }
     
     [[nodiscard]] Sampler* GetSampler() const

@@ -17,6 +17,7 @@ class VertexBuffer: public DefaultBuffer
     friend DefaultBuffer;
     D3D12_VERTEX_BUFFER_VIEW bufferView = {};
 public:
+    VertexBuffer() = default;
     ~VertexBuffer() = default;
 
     void Create(ID3D12GraphicsCommandList* commandList, const void* data, UINT16 size, UINT16 strideInBytes)

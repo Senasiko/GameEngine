@@ -93,22 +93,10 @@ void Renderer::LoadCommonAssets()
     ThrowIfFailed(swapChain.As(&m_swapChain));
     m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
     
-    // rtv
-    D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
-    rtvHeapDesc.NumDescriptors = FrameCount;
-    rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-    rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-    ThrowIfFailed(renderer->m_device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&rtvHeap)));
-    
-    // dsv
-    D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
-    dsvHeapDesc.NumDescriptors = FrameCount;
-    dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-    dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-    ThrowIfFailed(renderer->m_device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&dsvHeap)));
-
+    rtvHeap->Initialize();
     cbvSrvUavHeap->Initialize();
     sampler->Initialize();
+    dsvHeap->Initialize();
 
 }
 
@@ -121,7 +109,6 @@ void Renderer::LoadAssets()
     {
         frameResources[i] = new FrameResource(i);
         auto currentFrame = frameResources[i];
-        CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(rtvHeap->GetCPUDescriptorHandleForHeapStart());
         
         currentFrame->Initialize();
         lists.push_back(currentFrame->commandList.Get());
@@ -170,6 +157,11 @@ void Renderer::Update()
 
     m_fenceValue++;
     m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
+}
+
+void Renderer::LightPass()
+{
+    
 }
 
 void Renderer::Present()

@@ -4,7 +4,7 @@
 void DescriptorHeap::Initialize()
 {
     D3D12_DESCRIPTOR_HEAP_DESC desc = {};
-    desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+    desc.Flags = heapFlag;
     desc.Type = heapType;
     desc.NodeMask = 0;
     desc.NumDescriptors = maxSize;
@@ -48,6 +48,8 @@ void DescriptorHeap::ReAllocator()
         ReCreateDesc(i);
     }
 
+    heap = newHeap;
+
     maxSize *= 2;
 }
 
@@ -77,6 +79,7 @@ UINT CbvSrvUavDescriptorHeap::AllocatorSRV(ID3D12Resource* pResource, D3D12_SHAD
     SubDesc subDesc = {};
     subDesc.type = SRV;
     subDesc.srvDesc = *desc;
+    subDesc.resource = pResource;
     descMap.insert_or_assign(index, subDesc);
     return index;
 }
@@ -88,6 +91,47 @@ UINT CbvSrvUavDescriptorHeap::AllocatorUAV(ID3D12Resource* pResource, D3D12_UNOR
     SubDesc subDesc = {};
     subDesc.type = UAV;
     subDesc.uavDesc = *desc;
+    subDesc.resource = pResource;
     descMap.insert_or_assign(index, subDesc);
     return index;
+}
+
+void RtvDescriptorHeap::ReCreateDesc(UINT index)
+{
+    auto pResource = resourceMap[index];
+    auto newIndex = Allocator();
+    renderer->m_device->CreateRenderTargetView(pResource, nullptr, GetCpuHandle(newIndex));
+}
+
+void RtvDescriptorHeap::AllocatorRTV(DescriptorHandle* handle, ID3D12Resource* pResource, D3D12_RENDER_TARGET_VIEW_DESC* rtvDesc)
+{
+    auto index = Allocator();
+    
+    renderer->m_device->CreateRenderTargetView(pResource, rtvDesc, GetCpuHandle(index));
+    handle->index = index;
+    handle->heap = this;
+    resourceMap.insert_or_assign(index, pResource);
+}
+
+void DsvDescriptorHeap::ReCreateDesc(UINT index)
+{
+    auto pResource = resourceMap[index];
+    auto newIndex = Allocator();
+    renderer->m_device->CreateDepthStencilView(pResource, nullptr, GetCpuHandle(newIndex));
+}
+
+void DsvDescriptorHeap::AllocatorDSV(DescriptorHandle* handle, ID3D12Resource* pResource)
+{
+    auto index = Allocator();
+    
+    D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
+    dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
+    dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+    dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    dsvDesc.Texture2D.MipSlice = 0;
+    auto b = GetCpuHandle(index);
+    renderer->m_device->CreateDepthStencilView(pResource, &dsvDesc, GetCpuHandle(index));
+    resourceMap.insert_or_assign(index, pResource);
+
+    handle->index = index;
 }

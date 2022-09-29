@@ -47,7 +47,6 @@ void GameApp::Initialize(HINSTANCE hInstance, int nCmdShow)
 #endif
     winInst = std::make_unique<WindowsWindow>();
     controller = std::make_unique<GameController>();
-    // renderer = std::make_unique<Renderer>();
     winInst->Initialize(this, hInstance, nCmdShow);
     auto size = winInst->GetWindowSize();
     renderer->Initialize(size.width, size.height);
@@ -55,7 +54,8 @@ void GameApp::Initialize(HINSTANCE hInstance, int nCmdShow)
 
 int GameApp::Run()
 {
-    renderer->scene->AddObject(std::make_shared<Mesh>(Mesh()));
+    auto a = Mesh();
+    // renderer->scene->AddObject(std::make_shared<Mesh>(Mesh()));
     return winInst->Run();
 }
 

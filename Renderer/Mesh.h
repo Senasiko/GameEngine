@@ -2,7 +2,7 @@
 #include "../Core/pch.h"
 #include "Texture.h"
 #include "DefaultBuffer.h"
-#include "RenderItem.h"
+// #include "RenderItem.h"
 #include "Shader.h"
 #include "ConstantBuffer.h"
 #include "Renderer.h"
@@ -30,6 +30,7 @@ class Mesh : public RenderItem
     Transform transform = {XMVectorSet(0, 0, 0, 0), XMQuaternionRotationRollPitchYaw(0, 0, 0)};
 public:
     Mesh() = default;
+    ~Mesh() = default;
     static void LoadCommonAssets(ID3D12GraphicsCommandList* commandList);
     static ComPtr<ID3D12PipelineState> pso;
     static unique_ptr<RootSignature> rootSignature;

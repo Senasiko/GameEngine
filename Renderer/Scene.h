@@ -6,10 +6,30 @@
 
 class SceneTexture
 {
+    unique_ptr<Texture2D> gBufferBaseColor = make_unique<Texture2D>();
+    unique_ptr<Texture2D> gBufferDepth = make_unique<Texture2D>();
+    // unique_ptr<Texture2D> gBufferC = make_unique<Texture2D>();
 public:
-    ComPtr<ID3D12Resource> GBufferA;
-    ComPtr<ID3D12Resource> GBufferB;
-    ComPtr<ID3D12Resource> GBufferC;
+    void Initialize(RtvDescriptorHeap* heap, DsvDescriptorHeap* dsvHeap);
+
+    D3D12_CPU_DESCRIPTOR_HANDLE* GetRTVCpuHandle() const
+    {
+        D3D12_CPU_DESCRIPTOR_HANDLE handle[] = {
+            gBufferBaseColor->GetCpuHandle(),
+        };
+        return handle;
+    }
+
+    D3D12_CPU_DESCRIPTOR_HANDLE* GetDSVCpuHandle() const
+    {
+        auto handle = gBufferDepth->GetCpuHandle();
+        return &handle;
+    }
+
+    static UINT GetRenderTargetNum()
+    {
+        return 1;
+    }    
 };
 
 class Scene
@@ -39,8 +59,22 @@ public:
 
         }
     }
+
+    void AddLight(shared_ptr<Light> light);
+    void RemoveLight(shared_ptr<Light> light);
+
+    template<typename Callback>
+    void LightIter(Callback cb)
+    {
+        auto setIter = lights.begin();
+        while (setIter != lights.end())
+        {
+            cb(*setIter);
+            ++setIter;
+        }
+    }
     
 private:
     map<string, set<SceneItem>> objectsMap = {};
-    vector<Light> lights = {};
+    set<shared_ptr<Light>> lights = {};
 };

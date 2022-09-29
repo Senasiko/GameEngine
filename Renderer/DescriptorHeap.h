@@ -6,6 +6,7 @@ struct DescriptorHandle;
 class DescriptorHeap
 {
     D3D12_DESCRIPTOR_HEAP_TYPE heapType;
+    D3D12_DESCRIPTOR_HEAP_FLAGS heapFlag;
     ComPtr<ID3D12DescriptorHeap> heap;
     queue<UINT> freeHandle = {};
     UINT maxSize = 256;
@@ -26,7 +27,7 @@ class DescriptorHeap
     
 public:
     DescriptorHeap() = delete;
-    DescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType): heapType(heapType)
+    DescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, D3D12_DESCRIPTOR_HEAP_FLAGS heapFlag): heapType(heapType), heapFlag(heapFlag)
     {
     }
     virtual ~DescriptorHeap()
@@ -38,16 +39,15 @@ public:
 
     D3D12_CPU_DESCRIPTOR_HANDLE GetCpuHandle(UINT index) const
     {
-        auto handle = GetCpuHandleStart();
-        CD3DX12_CPU_DESCRIPTOR_HANDLE start(handle);
-        return start.Offset(index * GetDescriptorIncrementSize());
+        return CD3DX12_CPU_DESCRIPTOR_HANDLE(GetCpuHandleStart(), static_cast<INT>(index), GetDescriptorIncrementSize());
     }
 
     D3D12_GPU_DESCRIPTOR_HANDLE GetGpuHandle(UINT index) const
     {
-        auto handle = GetGpuHandleStart();
-        CD3DX12_GPU_DESCRIPTOR_HANDLE start(handle);
-        return start.Offset(index * GetDescriptorIncrementSize());
+        // auto handle = GetGpuHandleStart();
+        // CD3DX12_GPU_DESCRIPTOR_HANDLE start(handle);
+        // return start.Offset(index, GetDescriptorIncrementSize());
+        return CD3DX12_GPU_DESCRIPTOR_HANDLE(GetGpuHandleStart(), static_cast<INT>(index), GetDescriptorIncrementSize());
     }
 
     ID3D12DescriptorHeap* GetHeap() const
@@ -133,7 +133,7 @@ class CbvSrvUavDescriptorHeap : public DescriptorHeap
     UINT AllocatorSRV(ID3D12Resource* pResource, D3D12_SHADER_RESOURCE_VIEW_DESC* desc);
     UINT AllocatorUAV(ID3D12Resource* pResource, D3D12_UNORDERED_ACCESS_VIEW_DESC* desc);
 public:
-    CbvSrvUavDescriptorHeap(): DescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) {}
+    CbvSrvUavDescriptorHeap(): DescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE) {}
     ~CbvSrvUavDescriptorHeap() override = default;
     
     void CreateCBV(DescriptorHandle* handle, D3D12_GPU_VIRTUAL_ADDRESS bufferLocation, UINT sizeInBytes)
@@ -157,3 +157,22 @@ public:
     }
 };
 
+class RtvDescriptorHeap: public DescriptorHeap
+{
+    map<UINT, ID3D12Resource*> resourceMap = {};
+public:
+    RtvDescriptorHeap(): DescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE) {}
+    ~RtvDescriptorHeap() override = default;
+    void ReCreateDesc(UINT index) override;
+    void AllocatorRTV(DescriptorHandle* handle, ID3D12Resource* pResource, D3D12_RENDER_TARGET_VIEW_DESC* rtvDesc);
+};
+
+class DsvDescriptorHeap: public DescriptorHeap
+{
+    map<UINT, ID3D12Resource*> resourceMap = {};
+public:
+    DsvDescriptorHeap(): DescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE) {}
+    ~DsvDescriptorHeap() override = default;
+    void ReCreateDesc(UINT index) override;
+    void AllocatorDSV(DescriptorHandle* handle, ID3D12Resource* pResource);
+};

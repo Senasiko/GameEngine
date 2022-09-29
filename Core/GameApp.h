@@ -1,7 +1,6 @@
 ﻿#pragma once
 #include "GameController.h"
 #include "WindowAdapter.h"
-#include "../Renderer/Renderer.h"
 #include "pch.h"
 
 class GameApp

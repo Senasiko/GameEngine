@@ -2,18 +2,18 @@
 #include "Renderer.h"
 #include "Helper.h"
 
-void Texture::Create(D3D12_RESOURCE_DESC* desc)
+void Texture::Create(D3D12_RESOURCE_DESC* desc, D3D12_RESOURCE_STATES resourceState)
 {
     CD3DX12_HEAP_PROPERTIES defaultProp(D3D12_HEAP_TYPE_DEFAULT);
     ThrowIfFailed(renderer->m_device->CreateCommittedResource(
         &defaultProp,
         D3D12_HEAP_FLAG_NONE,
         desc,
-        D3D12_RESOURCE_STATE_COPY_DEST,
+        resourceState,
         nullptr,
         IID_PPV_ARGS(&texture)));
     NAME_D3D12_OBJECT(texture);
-    state = D3D12_RESOURCE_STATE_COPY_DEST;
+    state = resourceState;
 }
 
 void Texture::Upload(ID3D12GraphicsCommandList* commandList, UINT RowPitch, UINT SlicePitch, void* data)
@@ -37,9 +37,7 @@ void Texture::Upload(ID3D12GraphicsCommandList* commandList, UINT RowPitch, UINT
     
     UpdateSubresources(commandList, texture.Get(), textureUpload.Get(), 0, 0, 1, &resourceData);
 
-    auto transition = CD3DX12_RESOURCE_BARRIER::Transition(texture.Get(), state, D3D12_RESOURCE_STATE_GENERIC_READ);
-    commandList->ResourceBarrier(1, &transition);
-    state = D3D12_RESOURCE_STATE_GENERIC_READ;
+    Transition(commandList, D3D12_RESOURCE_STATE_GENERIC_READ);
 }
 
 // void Texture::UploadFromFile(ID3D12GraphicsCommandList* commandList, D3D12_RESOURCE_DESC* desc, UINT RowPitch, UINT SlicePitch, string filename)
@@ -55,7 +53,6 @@ void Texture::Upload(ID3D12GraphicsCommandList* commandList, UINT RowPitch, UINT
 //     // Upload(commandList, desc, RowPitch, SlicePitch, data);
 //     //
 // }
-
 void Texture2D::ResolveFromFile(string filename)
 {
     UINT size;
@@ -80,7 +77,7 @@ void Texture2D::ResolveFromFile(string filename)
 
 }
 
-void Texture2D::CreateSRV(CbvSrvUavDescriptorHeap* heap) const
+void Texture2D::InitAsSRV(CbvSrvUavDescriptorHeap* heap) const
 {
     D3D12_SHADER_RESOURCE_VIEW_DESC desc = {};
     desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
@@ -90,4 +87,49 @@ void Texture2D::CreateSRV(CbvSrvUavDescriptorHeap* heap) const
     desc.Texture2D.MostDetailedMip = 0;
     desc.Texture2D.ResourceMinLODClamp = 0.0f;
     heap->CreateSRV(handle.get(), texture.Get(), &desc);
+}
+
+void Texture2D::InitAsRtv(RtvDescriptorHeap* heap, DXGI_FORMAT format, UINT width, UINT height)
+{
+    auto desc = CD3DX12_RESOURCE_DESC::Tex2D(format, width, height);
+    desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+    Texture::Create(&desc, D3D12_RESOURCE_STATE_RENDER_TARGET);
+        
+    D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+    rtvDesc.Format = format;
+    rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DMS;
+    heap->AllocatorRTV(handle.get(), GetResource(), &rtvDesc);
+}
+
+void Texture2D::InitAsDsV(DsvDescriptorHeap* heap, UINT width, UINT height)
+{
+    D3D12_RESOURCE_DESC depthStencilDesc;
+    depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+    depthStencilDesc.Alignment = 0;
+    depthStencilDesc.Width = width;
+    depthStencilDesc.Height = height;
+    depthStencilDesc.DepthOrArraySize = 1;
+    depthStencilDesc.MipLevels = 1;
+    depthStencilDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
+    depthStencilDesc.SampleDesc.Count = 1;
+    depthStencilDesc.SampleDesc.Quality = 0;
+    depthStencilDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+    depthStencilDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+    
+    D3D12_CLEAR_VALUE optClear;
+    optClear.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    optClear.DepthStencil.Depth = 1.0f;
+    optClear.DepthStencil.Stencil = 0;
+    CD3DX12_HEAP_PROPERTIES heapProp(D3D12_HEAP_TYPE_DEFAULT);
+    ThrowIfFailed(renderer->m_device->CreateCommittedResource(
+        &heapProp,
+        D3D12_HEAP_FLAG_NONE,
+        &depthStencilDesc,
+        D3D12_RESOURCE_STATE_COMMON,
+        &optClear,
+        IID_PPV_ARGS(&texture)));
+    heap->AllocatorDSV(handle.get(), texture.Get());
+    handle->heap = heap;
+
+    state = D3D12_RESOURCE_STATE_COMMON;
 }

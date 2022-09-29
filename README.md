@@ -7,6 +7,8 @@ A mini game engine by c++ and Directx12. Just early draft and WIP.
 
 - [ ] light pass
 
+- [ ] multiple thread
+
 - [ ] defer render
 
 - [ ] TAA

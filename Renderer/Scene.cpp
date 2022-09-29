@@ -1,6 +1,14 @@
 ﻿#include "Scene.h"
 #include "Mesh.h"
 
+void SceneTexture::Initialize(RtvDescriptorHeap* heap, DsvDescriptorHeap* dsvHeap)
+{
+    gBufferBaseColor->InitAsRtv(heap, DXGI_FORMAT_R32G32B32A32_FLOAT, renderer->displayWidth, renderer->displayHeight);
+    // gBufferDepth->InitAsRtv(heap, DXGI_FORMAT_R32G32B32A32_FLOAT, renderer->displayWidth, renderer->displayHeight);
+    gBufferDepth->InitAsDsV(dsvHeap, renderer->displayWidth, renderer->displayHeight);
+    // gBufferBaseColor->CreateEmpty(DXGI_FORMAT_R32G32B32A32_FLOAT, renderer->displayWidth, renderer->displayHeight);
+}
+
 void Scene::AddObject(SceneItem item)
 {
     string type = item->GetType();
@@ -29,5 +37,15 @@ void Scene::RemoveObject(SceneItem item)
         typeSet.erase(item);
         objectsMap.insert(std::pair(type, typeSet));
     }
+}
+
+void Scene::AddLight(shared_ptr<Light> light)
+{
+    lights.insert(light);
+}
+
+void Scene::RemoveLight(shared_ptr<Light> light)
+{
+    lights.erase(light);
 }
 

@@ -57,7 +57,7 @@ void Mesh::LoadCommonAssets(ID3D12GraphicsCommandList* commandList)
     
     baseColor = make_unique<Texture2D>();
     baseColor->Create(commandList, "cube.png");
-    baseColor->CreateSRV(renderer->GetCbvSrvUavHeap());
+    baseColor->InitAsSRV(renderer->GetCbvSrvUavHeap());
 }
 
 void Mesh::LoadAssets(ID3D12GraphicsCommandList* commandList)

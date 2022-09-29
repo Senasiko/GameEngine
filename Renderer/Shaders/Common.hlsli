@@ -20,6 +20,11 @@ struct PixelIn
     float4 color: COLOR;
 };
 
+struct PixelOut
+{
+    float baseColor: SV_Target0;
+};
+
 
 float4 localToProjection(float3 position, float4x4 worldMatrix, float4x4 viewProjectionMatrix)
 {
