@@ -1,30 +1,39 @@
 ﻿#pragma once
 #include "../Core/pch.h"
 
-class FrameResource;
 class View;
+class SceneTexture;
 
 class RenderItem
 {
-    virtual ID3D12RootSignature* GetRootSignature() { return nullptr; };
-    virtual ID3D12PipelineState* GetPso() { return nullptr; };
 public:
-    virtual ~RenderItem() = default;
-    
     struct Transform
     {
         XMVECTOR translate;
         XMVECTOR rotate;
     };
+private:
+    struct Transform;
+    virtual ID3D12RootSignature* GetRootSignature() { return nullptr; };
+    virtual ID3D12PipelineState* GetPso() { return nullptr; };
+    Transform transform = {XMVectorSet(0, 0, 0, 0), XMQuaternionRotationRollPitchYaw(0, 0, 0)};
+    
+public:
+    BOOL bIsInitialized = FALSE;
 
-    virtual BOOL IsInitialized() = 0;
+    virtual ~RenderItem() = default;
+
     virtual void Initialize(ID3D12GraphicsCommandList* commandList) = 0;
     virtual void Update(UINT frameIndex) = 0;
-    virtual void InputAssemble(ID3D12GraphicsCommandList* commandList, UINT frameIndex, View* view) = 0;
+    virtual void InputAssemble(ID3D12GraphicsCommandList* commandList, UINT frameIndex, View* view, SceneTexture* sceneTexture) = 0;
     virtual void Render(ID3D12GraphicsCommandList* commandList) = 0;
     virtual string GetType() = 0;
 
-    virtual Transform* GetTransform() = 0;
+    virtual BOOL IsInitialized() { return bIsInitialized; };
+    virtual Transform* GetTransform()
+    {
+        return &transform;   
+    }
     virtual void Rotate(float Pitch, float Yaw, float Roll)
     {
         Transform* transform = GetTransform();

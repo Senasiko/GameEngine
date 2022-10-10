@@ -6,6 +6,12 @@
 
 class View: public DescBindable
 {
+    struct ViewConstantBuffer
+    {
+        XMMATRIX martix;
+        LONG screenWidth;
+        LONG screenHeight;
+    };
 public:
     virtual ~View() = default;
     unique_ptr<Camera> camera = make_unique<Camera>();
@@ -29,14 +35,19 @@ public:
     void UpdateBuffer(LONG screenWidth, LONG screenHeight)
     {
         auto matrix = camera->GetViewProjectionMatrix(screenWidth, screenHeight);
-        buffer->Update(&matrix);
+        ViewConstantBuffer data = {
+            matrix,
+            screenWidth,
+            screenHeight
+        };
+        buffer->Update(&data);
     }
         
     static UINT GetConstantSize()
     {
-        return Camera::GetConstantSize();
+        return sizeof(ViewConstantBuffer);
     }
-
+    
     D3D12_GPU_DESCRIPTOR_HANDLE GetGpuHandle() override
     {
         return buffer->GetGpuHandle();

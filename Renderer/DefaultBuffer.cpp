@@ -15,7 +15,7 @@ void DefaultBuffer::Create(ID3D12GraphicsCommandList* commandList, const void* d
         D3D12_RESOURCE_STATE_GENERIC_READ,
         nullptr,
         IID_PPV_ARGS(&bufferUpload)));
-    NAME_D3D12_OBJECT(bufferUpload);
+    NAME_D3D12_OBJECT(bufferUpload, STRING_TO_LPCWSTR(name));
 
     ThrowIfFailed(renderer->m_device->CreateCommittedResource(
         &defaultProp,
@@ -24,7 +24,7 @@ void DefaultBuffer::Create(ID3D12GraphicsCommandList* commandList, const void* d
         D3D12_RESOURCE_STATE_COPY_DEST,
         nullptr,
         IID_PPV_ARGS(&buffer)));
-    NAME_D3D12_OBJECT(buffer);
+    NAME_D3D12_OBJECT(buffer, STRING_TO_LPCWSTR(name));
 
     D3D12_SUBRESOURCE_DATA resourceData = {};
     resourceData.pData = data;

@@ -11,7 +11,7 @@ void Mesh::LoadCommonAssets(ID3D12GraphicsCommandList* commandList)
     RootSignature::InitParam params[] = {
         RootSignature::InitParam { D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC },
         RootSignature::InitParam {  D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 1, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC },
-        RootSignature::InitParam {  D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC },
+        // RootSignature::InitParam {  D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DATA_STATIC },
         RootSignature::InitParam {  D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, Sampler::SamplerCount, 0 },
     };
     rootSignature->Initialize(_countof(params), params);
@@ -42,7 +42,7 @@ void Mesh::LoadCommonAssets(ID3D12GraphicsCommandList* commandList)
     psoDesc.PS = CD3DX12_SHADER_BYTECODE(MeshShader::getPixelShaderStream(), MeshShader::getPixelShaderSize());
     psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
     psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-    psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+    psoDesc.DepthStencilState = depthStencilDesc;
     psoDesc.SampleMask = UINT_MAX;
     psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
     psoDesc.NumRenderTargets = 1;
@@ -52,12 +52,12 @@ void Mesh::LoadCommonAssets(ID3D12GraphicsCommandList* commandList)
     psoDesc.SampleDesc.Quality = 0;
 
     ThrowIfFailed(renderer->m_device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pso)));
-    NAME_D3D12_OBJECT(pso);
+    NAME_D3D12_OBJECT(pso, TEXT("meshPso"));
 
     
     baseColor = make_unique<Texture2D>();
     baseColor->Create(commandList, "cube.png");
-    baseColor->InitAsSRV(renderer->GetCbvSrvUavHeap());
+    // baseColor->InitSRV(renderer->GetCbvSrvUavHeap());
 }
 
 void Mesh::LoadAssets(ID3D12GraphicsCommandList* commandList)
@@ -76,7 +76,7 @@ void Mesh::LoadAssets(ID3D12GraphicsCommandList* commandList)
 
 
     PIXBeginEvent(commandList, 0, "Mesh: upload vertex buffer");
-    vertexBuffer->Create(commandList, &vertices, vertices.size() * sizeof(Vertex), sizeof(Vertex));
+    vertexBuffer->Create(commandList, &vertices, vertices.size(), sizeof(Vertex));
     PIXEndEvent(commandList);
 
     const std::array<UINT16, 36> indices =
@@ -106,7 +106,7 @@ void Mesh::LoadAssets(ID3D12GraphicsCommandList* commandList)
         4, 3, 7
     };
     PIXBeginEvent(commandList, 0, "Mesh: upload index buffer");
-    indexBuffer->Create(commandList, &indices, indices.size() * sizeof(UINT16));
+    indexBuffer->Create(commandList, &indices, indices.size());
     
     PIXEndEvent(commandList);
 }
@@ -140,14 +140,14 @@ void Mesh::Update(UINT frameIndex)
     constantBuffer[frameIndex]->Update(&martix);
 }
 
-void Mesh::InputAssemble(ID3D12GraphicsCommandList* commandList, UINT frameIndex, View* view)
+void Mesh::InputAssemble(ID3D12GraphicsCommandList* commandList, UINT frameIndex, View* view, SceneTexture* sceneTexture)
 {
     PIXBeginEvent(commandList, 0, "Mesh Render");
     commandList->SetPipelineState(pso.Get());
     DescBindable* descs[] = {
         view,
         constantBuffer[frameIndex].get(),
-        baseColor.get(),
+        // baseColor.get(),
         renderer->GetSampler(),
     };
     rootSignature->SetGraphicsRootSignature(descs, commandList);

@@ -32,6 +32,9 @@ class Renderer
     void WaitForGpu();
     void Render();
     void Present();
+    void PrePass();
+    void BasePass();
+    void LightPass();
 
 public:
     unique_ptr<Scene> scene;
@@ -50,7 +53,6 @@ public:
     void LoadCommonAssets();
     void LoadAssets();
     void Update();
-    void LightPass();
 
     [[nodiscard]] RtvDescriptorHeap* GetRtvHeap() const
     {

@@ -4,26 +4,42 @@
 #include "RenderItem.h"
 
 
-class SceneTexture
+class SceneTexture: public DescBindable
 {
-    unique_ptr<Texture2D> gBufferBaseColor = make_unique<Texture2D>();
-    unique_ptr<Texture2D> gBufferDepth = make_unique<Texture2D>();
+   public:
+ unique_ptr<Texture2D> gBufferBaseColor = make_unique<Texture2D>("gBufferBaseColor");
+    unique_ptr<Texture2D> gBufferDepth = make_unique<Texture2D>("gBufferDepth");
     // unique_ptr<Texture2D> gBufferC = make_unique<Texture2D>();
-public:
-    void Initialize(RtvDescriptorHeap* heap, DsvDescriptorHeap* dsvHeap);
+    void Initialize(RtvDescriptorHeap* heap, DsvDescriptorHeap* dsvHeap, CbvSrvUavDescriptorHeap* srvHeap);
 
-    D3D12_CPU_DESCRIPTOR_HANDLE* GetRTVCpuHandle() const
+    void TransitionForLightPass(ID3D12GraphicsCommandList* commandList) const
     {
-        D3D12_CPU_DESCRIPTOR_HANDLE handle[] = {
-            gBufferBaseColor->GetCpuHandle(),
-        };
-        return handle;
+        gBufferBaseColor->Transition(commandList, D3D12_RESOURCE_STATE_GENERIC_READ);
+        gBufferBaseColor->TransitionView(TEXTURE2D_VIEW_SRV);
+    }
+    
+    void TransitionForRender(ID3D12GraphicsCommandList* commandList) const
+    {
+        gBufferBaseColor->Transition(commandList, D3D12_RESOURCE_STATE_RENDER_TARGET);
+        gBufferBaseColor->TransitionView(TEXTURE2D_VIEW_RTV);
     }
 
-    D3D12_CPU_DESCRIPTOR_HANDLE* GetDSVCpuHandle() const
+    std::array<D3D12_CPU_DESCRIPTOR_HANDLE, 1> GetRTVCpuHandles() const
     {
-        auto handle = gBufferDepth->GetCpuHandle();
-        return &handle;
+        std::array handles = {
+            gBufferBaseColor->GetCpuHandle(),
+        };
+        return handles;
+    }
+
+    D3D12_CPU_DESCRIPTOR_HANDLE GetDSVCpuHandle() const
+    {
+        return gBufferDepth->GetCpuHandle();
+    }
+
+    D3D12_GPU_DESCRIPTOR_HANDLE GetGpuHandle() override
+    {
+        return gBufferBaseColor->GetGpuHandle();
     }
 
     static UINT GetRenderTargetNum()

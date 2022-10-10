@@ -16,7 +16,7 @@ class FrameResource
     ComPtr<ID3D12Resource> renderTarget;
     DescriptorHandle rtvHandle;
     unique_ptr<SceneTexture> sceneTexture = make_unique<SceneTexture>();
-    
+
     D3D12_VIEWPORT viewport; 
     D3D12_RECT scissorRect;
 public:
@@ -31,9 +31,11 @@ public:
     void Bind(Scene* scene);
     void Update(Scene* scene, View* view);
     void ResetCommandList();
-    void LightPass();
-    void RenderStart();
     void RenderObjects();
+    void RenderStart();
+    void PrePass();
+    void BasePass();
+    void LightPass();
     void RenderEnd();
 
     [[nodiscard]] ID3D12GraphicsCommandList* GetCommandList() const

@@ -16,8 +16,8 @@ GLOBAL_GRAPHIC_SHADER(MeshShader, MeshVS, MeshPS)
 class Mesh : public RenderItem
 {
     DECLARE_RENDER_ITEM(Mesh)
-    unique_ptr<VertexBuffer> vertexBuffer = make_unique<VertexBuffer>();
-    unique_ptr<IndexBuffer> indexBuffer = make_unique<IndexBuffer>();
+    unique_ptr<VertexBuffer> vertexBuffer = make_unique<VertexBuffer>("meshVertexBuffer");
+    unique_ptr<IndexBuffer> indexBuffer = make_unique<IndexBuffer>("meshIndexBuffer");
     array<unique_ptr<ConstantBuffer>, FrameCount> constantBuffer = {};
     BOOL bInitialized = FALSE;
 
@@ -30,7 +30,7 @@ class Mesh : public RenderItem
     Transform transform = {XMVectorSet(0, 0, 0, 0), XMQuaternionRotationRollPitchYaw(0, 0, 0)};
 public:
     Mesh() = default;
-    ~Mesh() = default;
+    ~Mesh() override = default;
     static void LoadCommonAssets(ID3D12GraphicsCommandList* commandList);
     static ComPtr<ID3D12PipelineState> pso;
     static unique_ptr<RootSignature> rootSignature;
@@ -38,7 +38,7 @@ public:
     static BOOL bStaticInitialized;
     void Initialize(ID3D12GraphicsCommandList* commandList) override;
     void Update(UINT frameIndex) override;
-    void InputAssemble(ID3D12GraphicsCommandList* commandList, UINT frameIndex, View* view) override;
+    void InputAssemble(ID3D12GraphicsCommandList* commandList, UINT frameIndex, View* view, SceneTexture* sceneTexture) override;
     void Render(ID3D12GraphicsCommandList* commandList) override;
     BOOL IsInitialized() override { return bInitialized; };
 

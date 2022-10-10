@@ -14,7 +14,7 @@ void ConstantBuffer::Create(CbvSrvUavDescriptorHeap* heap, UINT16 size)
         D3D12_RESOURCE_STATE_GENERIC_READ,
         nullptr,
         IID_PPV_ARGS(&buffer)));
-    NAME_D3D12_OBJECT(buffer);
+    NAME_D3D12_OBJECT(buffer, STRING_TO_LPCWSTR(name));
 
     auto range = CD3DX12_RANGE(0, byteSize);
     ThrowIfFailed(buffer->Map(0, &range, &memory));

@@ -8,9 +8,12 @@ class ConstantBuffer: public DescBindable
     ComPtr<ID3D12Resource> buffer;
     UINT byteSize = 0;
     unique_ptr<DescriptorHandle> handle = make_unique<DescriptorHandle>();
-    
+
+    string name = "constantBuffer";
     void* memory = nullptr;
 public:
+    ConstantBuffer() = default;
+    ConstantBuffer(string name): name(name) {}
     virtual ~ConstantBuffer()
     {
         if (this && buffer.Get() != nullptr)

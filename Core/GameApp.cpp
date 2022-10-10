@@ -55,7 +55,8 @@ void GameApp::Initialize(HINSTANCE hInstance, int nCmdShow)
 int GameApp::Run()
 {
     auto a = Mesh();
-    // renderer->scene->AddObject(std::make_shared<Mesh>(Mesh()));
+    renderer->scene->AddObject(std::make_shared<Mesh>());
+    renderer->scene->AddLight(std::make_shared<DirectLight>());
     return winInst->Run();
 }
 

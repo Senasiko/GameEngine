@@ -144,19 +144,44 @@ void Renderer::Update()
 
     currentFrame->ResetCommandList();
     currentFrame->Update(scene.get(), view.get());
-    ThrowIfFailed(currentFrame->commandList->Close());
+    currentFrame->RenderStart();
+    currentFrame->PrePass();
+    currentFrame->BasePass();
+    currentFrame->LightPass();
+    currentFrame->RenderEnd();
     ID3D12CommandList* list[] = { currentFrame->commandList.Get() };
-    m_commandQueue->ExecuteCommandLists(1, list);
-    WaitForGpu();
-    Render();
+    m_commandQueue->ExecuteCommandLists(_countof(list), list);
     Present();
     
     frameResources[m_frameIndex]->fenceValue = m_fenceValue;
     ThrowIfFailed(m_commandQueue->Signal(m_fence.Get(), m_fenceValue));
-    NAME_D3D12_OBJECT(m_commandQueue);
+    NAME_D3D12_OBJECT(m_commandQueue, TEXT("commandQueue"));
 
     m_fenceValue++;
     m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
+}
+
+void Renderer::Present()
+{
+    m_swapChain->Present(1, 0);
+}
+
+void Renderer::PrePass()
+{
+    auto currentFrame = frameResources[m_frameIndex];
+    currentFrame->PrePass();
+    // ID3D12CommandList* list[] = { currentFrame->commandList.Get() };
+    // m_commandQueue->ExecuteCommandLists(_countof(list), list);
+    // WaitForGpu();
+}
+
+void Renderer::BasePass()
+{
+    auto currentFrame = frameResources[m_frameIndex];
+    currentFrame->BasePass();
+    // ID3D12CommandList* list[] = { currentFrame->commandList.Get() };
+    // m_commandQueue->ExecuteCommandLists(_countof(list), list);
+    // WaitForGpu();
 }
 
 void Renderer::LightPass()
@@ -164,10 +189,6 @@ void Renderer::LightPass()
     
 }
 
-void Renderer::Present()
-{
-    m_swapChain->Present(1, 0);
-}
 
 void Renderer::Render()
 {
@@ -177,8 +198,8 @@ void Renderer::Render()
     currentFrame->RenderStart();
     currentFrame->RenderObjects();
     currentFrame->RenderEnd();
-
+    
     ID3D12CommandList* list[] = { currentFrame->commandList.Get() };
-    m_commandQueue->ExecuteCommandLists(1, list);
+    m_commandQueue->ExecuteCommandLists(_countof(list), list);
 
 }

@@ -23,7 +23,8 @@ inline void SetNameIndexed(ID3D12Object*, LPCWSTR, UINT)
 {
 }
 #endif
-#define NAME_D3D12_OBJECT(x) SetName((x).Get(), L#x)
+#define STRING_TO_LPCWSTR(s) std::wstring((s).begin(), (s).end()).c_str()
+#define NAME_D3D12_OBJECT(x, n) SetName((x).Get(), n)
 #define NAME_D3D12_OBJECT_INDEXED(x, n) SetNameIndexed((x)[n].Get(), L#x, n)
 inline std::string HrToString(HRESULT hr)
 {
@@ -132,4 +133,18 @@ struct Vertex
     XMFLOAT3 TangentU;
     XMFLOAT4 Color;
     XMFLOAT2 TexC;
+};
+
+struct VertexBufferOption
+{
+    float* vertices;
+    UINT16 count;
+    UINT16 strideInBytes;
+};
+
+struct IndexBufferOption
+{
+    UINT16* indices;
+    UINT16 count;
+    UINT16 strideInBytes;
 };

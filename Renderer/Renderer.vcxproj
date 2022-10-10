@@ -248,6 +248,14 @@
       <AdditionalIncludeDirectories>..\Renderer</AdditionalIncludeDirectories>
       <LibCompiled>true</LibCompiled>
     </ClCompile>
+    <FxCompile Include="Shaders\LightPS.hlsl">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PSMain</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shaders\LightVS.hlsl">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VSMain</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+    </FxCompile>
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="View.cpp" />
     <FxCompile Include="Shaders\MeshPS.hlsl">
@@ -275,8 +283,14 @@
     <ClInclude Include="Sampler.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Shader.h" />
-    <ClInclude Include="Texture.h" />
     <ClInclude Include="View.h" />
+    <None Include="Shaders\MeshCommon.hlsli">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Shaders\LightCommon.hlsli">
+      <FileType>Document</FileType>
+    </None>
+    <ClInclude Include="Texture.h" />
     <None Include="packages.config" />
     <None Include="Shaders\Common.hlsli" />
   </ItemGroup>

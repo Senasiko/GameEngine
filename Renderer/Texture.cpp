@@ -12,7 +12,7 @@ void Texture::Create(D3D12_RESOURCE_DESC* desc, D3D12_RESOURCE_STATES resourceSt
         resourceState,
         nullptr,
         IID_PPV_ARGS(&texture)));
-    NAME_D3D12_OBJECT(texture);
+    NAME_D3D12_OBJECT(texture, STRING_TO_LPCWSTR(name));
     state = resourceState;
 }
 
@@ -28,7 +28,7 @@ void Texture::Upload(ID3D12GraphicsCommandList* commandList, UINT RowPitch, UINT
         D3D12_RESOURCE_STATE_GENERIC_READ,
         nullptr,
         IID_PPV_ARGS(&textureUpload)));
-    NAME_D3D12_OBJECT(textureUpload);
+    NAME_D3D12_OBJECT(textureUpload, STRING_TO_LPCWSTR(name));
 
     D3D12_SUBRESOURCE_DATA resourceData = {};
     resourceData.pData = data;
@@ -77,7 +77,7 @@ void Texture2D::ResolveFromFile(string filename)
 
 }
 
-void Texture2D::InitAsSRV(CbvSrvUavDescriptorHeap* heap) const
+void Texture2D::InitSRV(CbvSrvUavDescriptorHeap* heap, DXGI_FORMAT format) const
 {
     D3D12_SHADER_RESOURCE_VIEW_DESC desc = {};
     desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
@@ -86,14 +86,29 @@ void Texture2D::InitAsSRV(CbvSrvUavDescriptorHeap* heap) const
     desc.Texture2D.MipLevels = mipLevels;
     desc.Texture2D.MostDetailedMip = 0;
     desc.Texture2D.ResourceMinLODClamp = 0.0f;
-    heap->CreateSRV(handle.get(), texture.Get(), &desc);
+    heap->CreateSRV(srvHandle.get(), texture.Get(), &desc);
 }
 
 void Texture2D::InitAsRtv(RtvDescriptorHeap* heap, DXGI_FORMAT format, UINT width, UINT height)
 {
     auto desc = CD3DX12_RESOURCE_DESC::Tex2D(format, width, height);
     desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
-    Texture::Create(&desc, D3D12_RESOURCE_STATE_RENDER_TARGET);
+    
+    D3D12_CLEAR_VALUE optClear;
+    optClear.Format = format;
+    optClear.Color[0] = 0.0f;
+    optClear.Color[1] = 0.0f;
+    optClear.Color[2] = 0.0f;
+    optClear.Color[3] = 0.0f;
+    CD3DX12_HEAP_PROPERTIES heapProp(D3D12_HEAP_TYPE_DEFAULT);
+    state = D3D12_RESOURCE_STATE_RENDER_TARGET;
+    ThrowIfFailed(renderer->m_device->CreateCommittedResource(
+        &heapProp,
+        D3D12_HEAP_FLAG_NONE,
+        &desc,
+        state,
+        &optClear,
+        IID_PPV_ARGS(&texture)));
         
     D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
     rtvDesc.Format = format;
@@ -121,15 +136,16 @@ void Texture2D::InitAsDsV(DsvDescriptorHeap* heap, UINT width, UINT height)
     optClear.DepthStencil.Depth = 1.0f;
     optClear.DepthStencil.Stencil = 0;
     CD3DX12_HEAP_PROPERTIES heapProp(D3D12_HEAP_TYPE_DEFAULT);
+    state = D3D12_RESOURCE_STATE_DEPTH_WRITE;
     ThrowIfFailed(renderer->m_device->CreateCommittedResource(
         &heapProp,
         D3D12_HEAP_FLAG_NONE,
         &depthStencilDesc,
-        D3D12_RESOURCE_STATE_COMMON,
+        state,
         &optClear,
         IID_PPV_ARGS(&texture)));
     heap->AllocatorDSV(handle.get(), texture.Get());
     handle->heap = heap;
 
-    state = D3D12_RESOURCE_STATE_COMMON;
 }
+

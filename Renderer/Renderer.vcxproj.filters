@@ -54,6 +54,12 @@
     <ClCompile Include="Sampler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Lighting.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RootSignature.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Mesh.h">
@@ -98,13 +104,23 @@
     <ClInclude Include="Sampler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Lighting.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RootSignature.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\MeshPS.hlsl" />
     <FxCompile Include="Shaders\MeshVS.hlsl" />
+    <FxCompile Include="Shaders\LightPS.hlsl" />
+    <FxCompile Include="Shaders\LightVS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Common.hlsli" />
     <None Include="packages.config" />
+    <None Include="Shaders\LightCommon.hlsli" />
+    <None Include="Shaders\MeshCommon.hlsli" />
   </ItemGroup>
 </Project>
