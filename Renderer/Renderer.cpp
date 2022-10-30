@@ -13,6 +13,10 @@ void Renderer::Initialize(LONG width, LONG height)
     displayHeight = height;
     scene = make_unique<Scene>();
     view = make_unique<View>();
+    auto camera = Camera();
+    camera.LookAt(XMVectorSet(0.0f, 60.f, 0.f, 1.0f), XMVectorSet(0.0f, 0.f, 0.f, 1.0f), XMVectorSet(1.f, 0.f, 0.f, 1.f));
+    camera.UpdateScreenSize(renderer->displayWidth, renderer->displayHeight);
+    view->UpdateCamera(camera);
     LoadCommonAssets();
     LoadAssets();
 }
@@ -114,7 +118,7 @@ void Renderer::LoadAssets()
         lists.push_back(currentFrame->commandList.Get());
     }
 
-    m_commandQueue->ExecuteCommandLists(FrameCount, &lists[0]);
+    m_commandQueue->ExecuteCommandLists(FrameCount, lists.data());
 
     WaitForGpu();
 }
@@ -140,7 +144,7 @@ void Renderer::Update()
         WaitForSingleObject(waitFrameEvent, INFINITE);
         CloseHandle(waitFrameEvent);
     }
-    view->Update();
+    view->UpdateViewSize(renderer->displayWidth, renderer->displayHeight);
 
     currentFrame->ResetCommandList();
     currentFrame->Update(scene.get(), view.get());
@@ -189,17 +193,3 @@ void Renderer::LightPass()
     
 }
 
-
-void Renderer::Render()
-{
-    const auto currentFrame = frameResources[m_frameIndex];
-
-    currentFrame->ResetCommandList();
-    currentFrame->RenderStart();
-    currentFrame->RenderObjects();
-    currentFrame->RenderEnd();
-    
-    ID3D12CommandList* list[] = { currentFrame->commandList.Get() };
-    m_commandQueue->ExecuteCommandLists(_countof(list), list);
-
-}

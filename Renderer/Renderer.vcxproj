@@ -169,6 +169,7 @@
       <AdditionalIncludeDirectories>..\Renderer</AdditionalIncludeDirectories>
       <LibCompiled>true</LibCompiled>
     </ClCompile>
+    <ClCompile Include="PipelineState.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="RenderItem.cpp" />
     <ClCompile Include="RootSignature.cpp" />
@@ -267,6 +268,22 @@
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VSMain</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
     </FxCompile>
+    <FxCompile Include="Shaders\PreMeshPS.hlsl">
+      <ObjectFileOutput>D:\projects\MyMiniEngine\App\x64\Debug\%(Filename).cso</ObjectFileOutput>
+      <TrackerLogDirectory>x64\Debug\Renderer.tlog\</TrackerLogDirectory>
+      <EntryPointName>PSMain</EntryPointName>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ShaderModel>6.2</ShaderModel>
+      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
+      <DisableOptimizations>true</DisableOptimizations>
+      <EnableDebuggingInformation>true</EnableDebuggingInformation>
+      <VariableName>shader%(Filename)</VariableName>
+      <HeaderFileOutput>CompiledShaders\MeshPS.h</HeaderFileOutput>
+      <AdditionalOptions>-Qembed_debug </AdditionalOptions>
+      <ShaderType>Pixel</ShaderType>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompiledShaders\PreMeshPS.h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
@@ -277,12 +294,14 @@
     <ClInclude Include="Lighting.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Helper.h" />
+    <ClInclude Include="PipelineState.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RenderItem.h" />
     <ClInclude Include="RootSignature.h" />
     <ClInclude Include="Sampler.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="Shaders\BRDF.hlsli" />
     <ClInclude Include="View.h" />
     <None Include="Shaders\MeshCommon.hlsli">
       <FileType>Document</FileType>

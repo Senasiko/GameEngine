@@ -10,7 +10,7 @@ class WindowAdapter
 class WindowsWindow: public WindowAdapter
 {
     GameApp* appInstance = nullptr;
-    RECT windowRect = RECT{0, 0, 1080, 720};
+    RECT windowRect = RECT{0, 0, 1900, 1080};
 
     struct WindowSize
     {

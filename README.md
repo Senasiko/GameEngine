@@ -7,7 +7,7 @@ A mini game engine by c++ and Directx12. Just early draft and WIP.
   
 - [x] defer render
 
-- [ ] light pass (base light is added)
+- [x] light pass
 
 - [ ] multiple thread
 

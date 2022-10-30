@@ -65,7 +65,8 @@ void WindowsWindow::Initialize(GameApp* app, HINSTANCE hInstance, int nCmdShow)
     RegisterClassExW(&wcex);
     windowInst = CreateWindow(wcex.lpszClassName, L"Game", WS_OVERLAPPEDWINDOW, 100, 100, GetWindowSize().width, GetWindowSize().height, nullptr, nullptr, hInstance, app);
 
-    AdjustWindowRect(&windowRect, WS_OVERLAPPEDWINDOW, FALSE);
+    auto windowR = windowRect;
+    AdjustWindowRect(&windowR, WS_OVERLAPPEDWINDOW, FALSE);
     ShowWindow(windowInst, nCmdShow);
     
 }

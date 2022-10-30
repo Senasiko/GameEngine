@@ -30,7 +30,6 @@ class Renderer
     FrameResource* frameResources[FrameCount] = {};
     
     void WaitForGpu();
-    void Render();
     void Present();
     void PrePass();
     void BasePass();

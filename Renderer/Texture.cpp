@@ -91,6 +91,8 @@ void Texture2D::InitSRV(CbvSrvUavDescriptorHeap* heap, DXGI_FORMAT format) const
 
 void Texture2D::InitAsRtv(RtvDescriptorHeap* heap, DXGI_FORMAT format, UINT width, UINT height)
 {
+    this->width = width;
+    this->height = height;
     auto desc = CD3DX12_RESOURCE_DESC::Tex2D(format, width, height);
     desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     
@@ -99,7 +101,7 @@ void Texture2D::InitAsRtv(RtvDescriptorHeap* heap, DXGI_FORMAT format, UINT widt
     optClear.Color[0] = 0.0f;
     optClear.Color[1] = 0.0f;
     optClear.Color[2] = 0.0f;
-    optClear.Color[3] = 0.0f;
+    optClear.Color[3] = 1.0f;
     CD3DX12_HEAP_PROPERTIES heapProp(D3D12_HEAP_TYPE_DEFAULT);
     state = D3D12_RESOURCE_STATE_RENDER_TARGET;
     ThrowIfFailed(renderer->m_device->CreateCommittedResource(
@@ -118,6 +120,8 @@ void Texture2D::InitAsRtv(RtvDescriptorHeap* heap, DXGI_FORMAT format, UINT widt
 
 void Texture2D::InitAsDsV(DsvDescriptorHeap* heap, UINT width, UINT height)
 {
+    this->width = width;
+    this->height = height;
     D3D12_RESOURCE_DESC depthStencilDesc;
     depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
     depthStencilDesc.Alignment = 0;

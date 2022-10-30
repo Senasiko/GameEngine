@@ -16,7 +16,7 @@ private:
     struct Transform;
     virtual ID3D12RootSignature* GetRootSignature() { return nullptr; };
     virtual ID3D12PipelineState* GetPso() { return nullptr; };
-    Transform transform = {XMVectorSet(0, 0, 0, 0), XMQuaternionRotationRollPitchYaw(0, 0, 0)};
+    Transform transform = {XMVectorSet(0, 0, 0, 1), XMQuaternionRotationRollPitchYaw(0, 0, 0)};
     
 public:
     BOOL bIsInitialized = FALSE;
@@ -25,7 +25,7 @@ public:
 
     virtual void Initialize(ID3D12GraphicsCommandList* commandList) = 0;
     virtual void Update(UINT frameIndex) = 0;
-    virtual void InputAssemble(ID3D12GraphicsCommandList* commandList, UINT frameIndex, View* view, SceneTexture* sceneTexture) = 0;
+    virtual void InputAssemble(ID3D12GraphicsCommandList* commandList, UINT frameIndex, View* view, SceneTexture* sceneTexture, BOOLEAN bIsPre) = 0;
     virtual void Render(ID3D12GraphicsCommandList* commandList) = 0;
     virtual string GetType() = 0;
 
@@ -33,6 +33,10 @@ public:
     virtual Transform* GetTransform()
     {
         return &transform;   
+    }
+    virtual void SetTranslate(float x, float y, float z)
+    {
+        transform.translate = XMVectorSet(x, y, z, 1);
     }
     virtual void Rotate(float Pitch, float Yaw, float Roll)
     {
@@ -42,7 +46,7 @@ public:
     virtual XMMATRIX GetWorldMatrix()
     {
         Transform* transform = GetTransform();
-        return XMMatrixTranspose(XMMatrixMultiply(XMMatrixTranslationFromVector(transform->translate), XMMatrixRotationQuaternion(transform->rotate)));
+        return XMMatrixMultiplyTranspose(XMMatrixTranslationFromVector(transform->translate), XMMatrixRotationQuaternion(transform->rotate));
     }
 };
 

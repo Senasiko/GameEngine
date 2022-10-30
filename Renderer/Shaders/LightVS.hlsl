@@ -9,6 +9,13 @@ struct VertexIn
 LightPixelIn VSMain(VertexIn vertexIn)
 {
     LightPixelIn result;
-    result.position = localToProjection(vertexIn.position, worldMatrix, viewProjectionMatrix);
+    [BRANCH]
+    if (lightType == LIGHT_TYPE_DIRECTIONAL)
+    {
+        result.position = float4(vertexIn.position.xy / abs(vertexIn.position).xy, 0, 1);
+    } else
+    {
+        result.position = LocalToProjection(vertexIn.position, worldMatrix, viewProjectionMatrix);
+    }
     return result;
 }

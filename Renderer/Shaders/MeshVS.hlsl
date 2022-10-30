@@ -15,8 +15,9 @@ PixelIn VSMain(VertexIn vertexIn)
 {
     PixelIn result;
     // result.position = float4(vertexIn.id % 2, vertexIn.id % 2, 0, 0);
-    result.position = localToProjection(vertexIn.position, worldMatrix, viewProjectionMatrix);
-    result.normal = vertexIn.normal;
+    result.position = LocalToProjection(vertexIn.position, worldMatrix, viewProjectionMatrix);
+    result.worldNormal = mul(vertexIn.normal, worldMatrix);
+    result.worldPosition = mul(vertexIn.position, worldMatrix);
     result.uv = vertexIn.uv;
     result.tangent = vertexIn.tangent;
     result.color = vertexIn.color;

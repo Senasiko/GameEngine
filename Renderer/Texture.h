@@ -92,6 +92,15 @@ public:
         return GetCurrentHandle()->GetGpuHandle();
     }
 
+    UINT GetWidth()
+    {
+        return width;
+    }
+
+    UINT GetHeight()
+    {
+        return height;
+    }
     void TransitionView(TEXTURE2D_VIEWS newView)
     {
         view = newView;

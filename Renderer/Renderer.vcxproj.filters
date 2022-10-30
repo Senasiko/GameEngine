@@ -60,6 +60,9 @@
     <ClCompile Include="RootSignature.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PipelineState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Mesh.h">
@@ -110,12 +113,16 @@
     <ClInclude Include="RootSignature.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PipelineState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\MeshPS.hlsl" />
     <FxCompile Include="Shaders\MeshVS.hlsl" />
     <FxCompile Include="Shaders\LightPS.hlsl" />
     <FxCompile Include="Shaders\LightVS.hlsl" />
+    <FxCompile Include="Shaders\PreMeshPS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Common.hlsli" />

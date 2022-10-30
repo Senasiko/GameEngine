@@ -31,7 +31,7 @@ public:
     void Bind(Scene* scene);
     void Update(Scene* scene, View* view);
     void ResetCommandList();
-    void RenderObjects();
+    void RenderObjects(View* view, BOOLEAN bIsPre);
     void RenderStart();
     void PrePass();
     void BasePass();

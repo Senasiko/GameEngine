@@ -52,7 +52,7 @@ void FrameResource::Bind(Scene* scene)
 void FrameResource::Update(Scene* scene, View* view)
 {
     frameView->UpdateFromOther(view);
-    frameView->UpdateBuffer(Renderer::displayWidth, Renderer::displayHeight);
+    frameView->UpdateBuffer();
     Bind(scene);
 }
 
@@ -64,9 +64,6 @@ void FrameResource::ResetCommandList()
 
 void FrameResource::RenderStart()
 {
-    commandList->RSSetViewports(1, &viewport);
-    commandList->RSSetScissorRects(1, &scissorRect);
-
     auto transition = CD3DX12_RESOURCE_BARRIER::Transition(renderTarget.Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
     commandList->ResourceBarrier(1, &transition);
     
@@ -79,39 +76,42 @@ void FrameResource::RenderStart()
 void FrameResource::PrePass()
 {
     PIXBeginEvent(commandList.Get(), 0, "Pre Pass");
-    auto dsvHandle = sceneTexture->GetDSVCpuHandle();
-    commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
-    
-    // commandList->ClearRenderTargetView(*sceneTexture->GetRTVCpuHandle(), Colors::Black, 0, nullptr);
-    // commandList->OMSetRenderTargets(1, sceneTexture->GetRTVCpuHandle(), TRUE, &dsvHandle);
-    
     ID3D12DescriptorHeap* heap[] = {renderer->GetCbvSrvUavHeap()->GetHeap(), renderer->GetSamplerHeap()};
     commandList->SetDescriptorHeaps(_countof(heap), heap);
 
-    auto light = lightSet.begin();
-    while (light != lightSet.end())
+    auto iter = lightSet.begin();
+    while (iter != lightSet.end())
     {
-        auto handle = light->get()->GetShadowMapCpuHandle();
-        commandList->OMSetRenderTargets(0, nullptr, FALSE, &handle);
-        RenderObjects();
-        ++light;
+        auto light = iter->get();
+        light->TransitionForPrePass(commandList.Get());
+        commandList->RSSetViewports(1, light->GetShadowView()->GetViewport());
+        commandList->RSSetScissorRects(1, light->GetShadowView()->GetScissorRect());
+        auto dsvHandle = light->GetDSVCpuHandle();
+        // auto rtvHandle = GetRtvCpuHandle();
+        commandList->ClearDepthStencilView(light->GetDSVCpuHandle(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+        commandList->OMSetRenderTargets(0, nullptr, FALSE, &dsvHandle);
+        RenderObjects(light->GetShadowView(), TRUE);
+        ++iter;
     }
     PIXEndEvent(commandList.Get());
 }
-
+ 
 void FrameResource::BasePass()
 {
     PIXBeginEvent(commandList.Get(), 0, "Base Pass");
 
+    commandList->RSSetViewports(1, frameView->GetViewport());
+    commandList->RSSetScissorRects(1, frameView->GetScissorRect());
+    
     auto dsvHandle = sceneTexture->GetDSVCpuHandle();
     commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
-
-    auto color = Colors::Black;
-    color.f[3] = 0.0f;
     auto handles = sceneTexture->GetRTVCpuHandles();
-    commandList->ClearRenderTargetView(handles[0], color, 0, nullptr);
-    commandList->OMSetRenderTargets(1, &handles[0], FALSE, &dsvHandle);
-    RenderObjects();
+    for (auto handle : handles)
+    {
+        commandList->ClearRenderTargetView(handle, Colors::Black, 0, nullptr);
+    }
+    commandList->OMSetRenderTargets(handles.size(), handles.data(), FALSE, &dsvHandle);
+    RenderObjects(GetFrameView(), FALSE);
     PIXEndEvent(commandList.Get());
 }
 
@@ -123,26 +123,30 @@ void FrameResource::LightPass()
     commandList->ClearRenderTargetView(GetRtvCpuHandle(), Colors::Black, 0, nullptr);
     auto handle = GetRtvCpuHandle();
     commandList->OMSetRenderTargets(1, &handle, FALSE, nullptr);
-    auto light = lightSet.begin();
-    while (light != lightSet.end())
+    auto iter = lightSet.begin();
+    while (iter != lightSet.end())
     {
-        light->get()->InputAssemble(GetCommandList(), frameIndex, GetFrameView(), sceneTexture.get());
-        light->get()->Render(GetCommandList());
-        ++light;
+        auto light = iter->get();
+        light->TransitionForLightPass(commandList.Get());
+        light->InputAssemble(GetCommandList(), frameIndex, GetFrameView(), sceneTexture.get(), FALSE);
+        light->Render(GetCommandList());
+        ++iter;
     }
 
     PIXEndEvent(commandList.Get());
 }
-void FrameResource::RenderObjects() 
+
+void FrameResource::RenderObjects(View* view, BOOLEAN bIsPre) 
 {
     auto iter = objectSet.begin();
     while (iter != objectSet.end())
     {
-        iter->get()->InputAssemble(GetCommandList(), frameIndex, GetFrameView(), sceneTexture.get());
+        iter->get()->InputAssemble(GetCommandList(), frameIndex, view, sceneTexture.get(), bIsPre);
         iter->get()->Render(GetCommandList());
         ++iter;
     }
 }
+
 
 void FrameResource::RenderEnd()
 {

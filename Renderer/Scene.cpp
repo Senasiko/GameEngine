@@ -4,9 +4,12 @@
 void SceneTexture::Initialize(RtvDescriptorHeap* heap, DsvDescriptorHeap* dsvHeap, CbvSrvUavDescriptorHeap* srvHeap)
 {
     gBufferBaseColor->InitAsRtv(heap, DXGI_FORMAT_R16G16B16A16_FLOAT, renderer->displayWidth, renderer->displayHeight);
-    gBufferBaseColor->InitSRV(srvHeap, DXGI_FORMAT_R16G16B16A16_FLOAT);
+    gBufferNormal->InitAsRtv(heap, DXGI_FORMAT_R16G16B16A16_UNORM, renderer->displayWidth, renderer->displayHeight);
     gBufferDepth->InitAsDsV(dsvHeap, renderer->displayWidth, renderer->displayHeight);
-    // gBufferBaseColor->CreateEmpty(DXGI_FORMAT_R32G32B32A32_FLOAT, renderer->displayWidth, renderer->displayHeight);
+    
+    gBufferBaseColor->InitSRV(srvHeap, DXGI_FORMAT_R16G16B16A16_FLOAT);
+    gBufferNormal->InitSRV(srvHeap, DXGI_FORMAT_R16G16B16A16_UNORM);
+    gBufferDepth->InitSRV(srvHeap, DXGI_FORMAT_R24_UNORM_X8_TYPELESS);
 }
 
 void Scene::AddObject(SceneItem item)

@@ -98,6 +98,12 @@ inline HRESULT ReadDataFromFile(LPCWSTR filename, unsigned char** data, UINT* si
 
 struct Vertex
 {
+    Vertex():
+    Position(XMFLOAT3(0, 0, 0)),
+    Normal(XMFLOAT3(0, 0, 0)),
+    TangentU(XMFLOAT3(0, 0, 0)),
+    Color(XMFLOAT4(0, 0, 0, 0)),
+    TexC(XMFLOAT2(0, 0)){}
     Vertex(
     const XMFLOAT3 p, 
     const XMFLOAT4 c,

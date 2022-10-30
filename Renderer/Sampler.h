@@ -10,7 +10,7 @@ public:
     void Initialize();
     void Set(ID3D12GraphicsCommandList* commandList, UINT index);
 
-    constexpr static UINT SamplerCount = 2;
+    constexpr static UINT SamplerCount = 3;
 
     ID3D12DescriptorHeap* Getheap()
     {

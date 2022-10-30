@@ -1,4 +1,4 @@
-﻿#include "Sampler.h"
+﻿    #include "Sampler.h"
 #include "Helper.h"
 #include "Renderer.h"
 
@@ -42,6 +42,21 @@ void Sampler::Initialize()
     clampSamplerDesc.MinLOD = 0;
     clampSamplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
     renderer->m_device->CreateSampler(&clampSamplerDesc, samplerHandle);
+
+    samplerHandle.Offset(descSize);
+
+    D3D12_SAMPLER_DESC anisotropicSamplerDesc = {};
+    anisotropicSamplerDesc.Filter = D3D12_FILTER_ANISOTROPIC;
+    anisotropicSamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    anisotropicSamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    anisotropicSamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    anisotropicSamplerDesc.MipLODBias = 0.0f;
+    anisotropicSamplerDesc.MaxAnisotropy = 1;
+    anisotropicSamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+    anisotropicSamplerDesc.BorderColor[0] = anisotropicSamplerDesc.BorderColor[1] = anisotropicSamplerDesc.BorderColor[2] = anisotropicSamplerDesc.BorderColor[3] = 0;
+    anisotropicSamplerDesc.MinLOD = 0;
+    anisotropicSamplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
+    renderer->m_device->CreateSampler(&anisotropicSamplerDesc, samplerHandle);
 }
 
 void Sampler::Set(ID3D12GraphicsCommandList* commandList, UINT index)
